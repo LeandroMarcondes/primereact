@@ -401,6 +401,12 @@ addComponent();
 addPrimeReact();
 addPassThrough();
 addCore();
-addPackageJson();
+
+// When building straight into the repo root (OUTPUT_DIR=./, used by the "prepare" script for git
+// installs), addPackageJson() would overwrite this repo's own real package.json with the minimal
+// generated one. Skip it in that case - the repo root already has the package.json it needs.
+if (process.env.SKIP_ROOT_PACKAGE_JSON !== 'true') {
+    addPackageJson();
+}
 
 export default entries;
