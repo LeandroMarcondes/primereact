@@ -512,7 +512,13 @@ export const DataTable = React.forwardRef((inProps, ref) => {
         let meta = editingMeta[editingKey];
 
         if (editing) {
-            !meta && (meta = editingMeta[editingKey] = { data: { ...rowData }, fields: [] });
+            // A meta entry can be left behind with an empty `fields` array after a previous edit
+            // session closes (deleting it is timing-sensitive across separate open/close cycles).
+            // Treat that the same as no entry at all, otherwise the next edit on this row is
+            // silently handed the stale snapshot from the *previous* session - including fields
+            // the caller never touched (e.g. a concurrency/version field) - even though
+            // props.rowData has since moved on.
+            (!meta || meta.fields.length === 0) && (meta = editingMeta[editingKey] = { data: { ...rowData }, fields: [] });
             meta.fields.push(field);
         } else if (meta) {
             const fields = meta.fields.filter((f) => f !== field);
@@ -535,7 +541,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
         let meta = frozenEditingMeta[editingKey];
 
         if (editing) {
-            !meta && (meta = frozenEditingMeta[editingKey] = { data: { ...rowData }, fields: [] });
+            // See the identical fix in onEditingMetaChange above for why this reseeds from rowData
+            // when the meta entry was left behind empty instead of being deleted.
+            (!meta || meta.fields.length === 0) && (meta = frozenEditingMeta[editingKey] = { data: { ...rowData }, fields: [] });
             meta.fields.push(field);
         } else if (meta) {
             const fields = meta.fields.filter((f) => f !== field);
