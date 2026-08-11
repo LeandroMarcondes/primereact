@@ -18,7 +18,15 @@ gulp.task('build-css', function () {
 });
 
 gulp.task('build-primereactcss', function () {
-    return gulp.src(['./styles/primereact.css']).pipe(concat('primereact.css')).pipe(gulp.dest('dist/resources')).pipe(rename('primereact.min.css')).pipe(gulp.dest('dist/resources'));
+    // Was hardcoded to 'dist/resources' regardless of OUTPUT_DIR, so it never reached the repo
+    // root build used by the "prepare" script - and since dist/ is gitignored, a git install
+    // silently ended up without primereact/resources/primereact(.min).css at all.
+    return gulp
+        .src(['./styles/primereact.css'])
+        .pipe(concat('primereact.css'))
+        .pipe(gulp.dest(process.env.OUTPUT_DIR + 'resources'))
+        .pipe(rename('primereact.min.css'))
+        .pipe(gulp.dest(process.env.OUTPUT_DIR + 'resources'));
 });
 
 gulp.task('build-themes', function () {
